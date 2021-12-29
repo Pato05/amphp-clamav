@@ -1,0 +1,23 @@
+{
+    "name": "pato05/amphp-clamav",
+    "description": "An asynchronous clamd wrapper written with amphp/socket",
+    "type": "library",
+    "require": {
+        "amphp/amp": "^2.6",
+        "amphp/socket": "^1.2",
+        "amphp/log": "^1.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Amp\\": "lib/",
+            "Amp\\ClamAV\\": "lib/ClamAV/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Pato05",
+            "email": "pato05mc@gmail.com"
+        }
+    ]
+}
