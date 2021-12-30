@@ -3,6 +3,7 @@
 namespace Amp\ClamAV;
 
 use Amp\ByteStream\InputStream;
+use Amp\ByteStream\StreamException;
 use Amp\Deferred;
 use Amp\Promise;
 use Amp\Socket\Socket;
@@ -42,7 +43,7 @@ class Session extends Base
     /** @inheritdoc */
     protected function command(string $command, bool $waitForResponse = true): \Generator
     {
-        $this->socket->write('z' . $command . "\x0");
+        yield $this->socket->write('z' . $command . "\x0");
         if ($waitForResponse) {
             return yield $this->commandResponsePromise($this->reqId++);
         }
@@ -109,7 +110,15 @@ class Session extends Base
     {
         return call(function () use ($stream) {
             $promise = $this->commandResponsePromise($this->reqId++);
-            yield from $this->pipeStreamScan($stream, $this->socket);
+            try {
+                yield from $this->pipeStreamScan($stream, $this->socket);
+            } catch (StreamException $e) {
+                if (!$this->socket->isClosed()) {
+                    $message = yield $promise;
+                    if ($message === 'INSTREAM size limit exceeded') throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                }
+                throw new ClamException($e->getMessage() . $message, ClamException::UNKNOWN, $e);
+            }
             return $this->parseScanOutput(yield $promise);
         });
     }

@@ -45,6 +45,8 @@ abstract class Base
      * @param $stream
      *
      * @return Promise<ScanResult>
+     * @throws ClamException If an exception happens with writing to the stream (if the INSTREAM limit has been reached, the errorCode will be `ClamException::INSTREAM_WRITE_EXCEEDED`)
+     * @throws \Amp\ByteStream\ClosedException If the socket has been closed
      */
     abstract public function scanFromStream(InputStream $stream): Promise;
 
@@ -55,21 +57,24 @@ abstract class Base
      * @param Socket $socket The destination socket
      *
      * @return \Generator<void>
+     * @throws \Amp\ByteStream\ClosedException If the socket has been closed
+     * @throws \Amp\ByteStream\StreamException If the writing fails
      */
     protected function pipeStreamScan(InputStream $stream, Socket $socket): \Generator
     {
         yield $socket->write("zINSTREAM\x0");
-        $chunk = '';
         while (null !== $chunk = yield $stream->read()) {
+            if (empty($chunk)) continue;
             // The format of the chunk is:
             // '<length><data>' where <length> is the size of the  following
-            // data  in bytes expressed as a 4 byte unsigned integer in network
+            // data in bytes expressed as a 4 byte unsigned integer in network
             // byte order and <data> is the actual chunk.
             // man: clamd
 
             // pack the chunk length
             $lengthData = \pack('N', \strlen($chunk));
-            $socket->write($lengthData . $chunk);
+            yield $socket->write($lengthData . $chunk);
+            $chunk = null;
         }
         yield $socket->write(\pack('N', 0));
     }

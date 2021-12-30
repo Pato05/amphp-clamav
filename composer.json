@@ -4,8 +4,7 @@
     "type": "library",
     "require": {
         "amphp/amp": "^2.6",
-        "amphp/socket": "^1.2",
-        "amphp/log": "^1.1"
+        "amphp/socket": "^1.2"
     },
     "license": "MIT",
     "autoload": {

@@ -3,7 +3,9 @@
 namespace Amp;
 
 use Amp\ByteStream\InputStream;
+use Amp\ByteStream\StreamException;
 use Amp\ClamAV\Base;
+use Amp\ClamAV\ClamException;
 use Amp\ClamAV\Session;
 use Amp\Socket\Socket;
 
@@ -57,8 +59,16 @@ class ClamAV extends Base
     {
         return call(function () use ($stream) {
             /** @var Socket */
-            $socket = yield $this->getSocket();
-            yield $this->pipeStreamScan($stream, $socket);
+            $socket = yield from $this->getSocket();
+            try {
+                yield from $this->pipeStreamScan($stream, $socket);
+            } catch (StreamException $e) {
+                if (!$socket->isClosed()) {
+                    $message = yield $socket->read();
+                    if ($message === 'INSTREAM size limit exceeded') throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                }
+                throw new ClamException($e->getMessage() . $message, ClamException::UNKNOWN, $e);
+            }
             return $this->parseScanOutput(yield $socket->read());
         });
     }
@@ -68,7 +78,7 @@ class ClamAV extends Base
     {
         /** @var Socket */
         $socket = yield from $this->getSocket();
-        $socket->write('z' . $command . "\x0");
+        yield $socket->write('z' . $command . "\x0");
         if ($waitForResponse) {
             return \trim(yield $socket->read());
         }
