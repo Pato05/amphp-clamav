@@ -24,10 +24,10 @@ abstract class Base
 
     /**
      * Scans a file or directory using the native ClamD `SCAN` command (ClamD must have access to this file!)
-     * Stops once a malware has been found (!).
+     * 
+     * Stops once a malware has been found.
      *
      * @param string $path
-     * @param bool $multi If enabled, runs a multithreaded scan instead of a singlethreaded one
      *
      * @return Promise<ScanResult>
      */
@@ -64,7 +64,9 @@ abstract class Base
     {
         yield $socket->write("zINSTREAM\x0");
         while (null !== $chunk = yield $stream->read()) {
-            if (empty($chunk)) continue;
+            if (empty($chunk)) {
+                continue;
+            }
             // The format of the chunk is:
             // '<length><data>' where <length> is the size of the  following
             // data in bytes expressed as a 4 byte unsigned integer in network

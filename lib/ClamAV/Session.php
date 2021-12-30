@@ -27,7 +27,7 @@ class Session extends Base
      *
      * @param Socket $socket
      *
-     * @return Promise<Session>
+     * @return Promise<self>
      */
     public static function fromSocket(Socket $socket): Promise
     {
@@ -115,7 +115,9 @@ class Session extends Base
             } catch (StreamException $e) {
                 if (!$this->socket->isClosed()) {
                     $message = yield $promise;
-                    if ($message === 'INSTREAM size limit exceeded') throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                    if ($message === 'INSTREAM size limit exceeded') {
+                        throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                    }
                 }
                 throw new ClamException($e->getMessage() . $message, ClamException::UNKNOWN, $e);
             }

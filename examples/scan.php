@@ -5,7 +5,6 @@ use Amp\ClamAV;
 use Amp\Loop;
 
 Loop::run(function () {
-
     echo 'connecting...' . PHP_EOL;
 
     $clamav = new ClamAV;
@@ -16,6 +15,7 @@ Loop::run(function () {
         return;
     }
     echo 'running test scan...' . PHP_EOL;
+
     /** @var \Amp\ClamAV\ScanResult */
     $result = yield $clamav->scan('/tmp/eicar.com');
     echo (string) $result . PHP_EOL;

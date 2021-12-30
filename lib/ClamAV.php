@@ -17,8 +17,6 @@ class ClamAV extends Base
      * Constructs the class.
      *
      * @param string $sockuri The socket uri (`unix://PATH` or `tcp://IP:PORT`)
-     *
-     * @return Promise<ClamAV>
      */
     public function __construct(private $sockuri = self::DEFAULT_SOCK_URI)
     {
@@ -65,7 +63,9 @@ class ClamAV extends Base
             } catch (StreamException $e) {
                 if (!$socket->isClosed()) {
                     $message = yield $socket->read();
-                    if ($message === 'INSTREAM size limit exceeded') throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                    if ($message === 'INSTREAM size limit exceeded') {
+                        throw new ClamException('INSTREAM size limit exceeded', ClamException::INSTREAM_WRITE_EXCEEDED, $e);
+                    }
                 }
                 throw new ClamException($e->getMessage() . $message, ClamException::UNKNOWN, $e);
             }

@@ -2,6 +2,12 @@
 
 An asynchronous ClamAV wrapper written with amphp/socket
 
+## Installing
+
+```
+composer require pato05/amphp-clamav
+```
+
 ## Examples
 
 Ping and scan of a file/directory
@@ -33,7 +39,7 @@ Loop::run(function () {
 });
 ```
 
-Scanning from a `ResourceInputStream`
+Scanning from a `InputStream` (in this case a `File` instance which implements `InputStream`)
 
 [`examples/scan_stream.php`](https://github.com/Pato05/amphp-clamav/blob/main/examples/scan_stream.php):
 
@@ -42,7 +48,6 @@ Scanning from a `ResourceInputStream`
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Amp\ByteStream\ResourceInputStream;
 use Amp\ClamAV;
 use Amp\Loop;
 
@@ -57,23 +62,14 @@ Loop::run(function () {
         return;
     }
     echo 'running a streamed scan...' . PHP_EOL;
-    /*
-        This is absolutely NOT RECOMMENDED to do and this is given only as an example of usage of the scanFromStream method.
-        It is recommended to use amphp/file instead, as it is written just below.
-        DON'T USE THIS SNIPPET APART FROM TESTING REASONS.
 
-        $file = yield \Amp\File\open('/tmp/eicar.com', 'r');
-        $res = yield $clamav->scanFromStream($file);
-
-        fopen is blocking and SHOULD NOT be used within asynchronous applications.
-    */
-    $file = \fopen('/tmp/eicar.com', 'r');
-    $stream = new ResourceInputStream($file);
+    /** @var \Amp\File\File */
+    $file = yield \Amp\File\openFile('/tmp/eicar.com', 'r');
 
     /** @var \Amp\ClamAV\ScanResult */
-    $res = yield $clamav->scanFromStream($stream);
+    $res = yield $clamav->scanFromStream($file);
+    yield $file->close(); // always close files to avoid memory leaks
     echo (string) $res . PHP_EOL;
-    \fclose($file);
 });
 ```
 
@@ -112,3 +108,7 @@ Though you MUST end every session by using the method `Session::end()`:
 ```php
 yield $clamSession->end();
 ```
+
+Be aware that in a session you can only execute ONE COMMAND AT A TIME, therefore, if you want to run more than one command in parallel, use the main `ClamAV` class instead.
+
+Multiple `Session`s can also be instantiated.

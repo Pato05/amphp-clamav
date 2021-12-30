@@ -30,6 +30,6 @@ class ScanResult
 
     public function __toString()
     {
-        return 'ScanResult(filename: ' . \var_export($this->filename, true) . ', isInfected: ' . \var_export($this->isInfected, true) . ', virusType: ' . \var_export($this->virusType, true) . ')';
+        return 'ScanResult(filename: ' . \var_export($this->filename, true) . ', isInfected: ' . \var_export($this->isInfected, true) . ', malwareType: ' . \var_export($this->malwareType, true) . ')';
     }
 }
