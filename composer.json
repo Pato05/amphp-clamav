@@ -19,5 +19,8 @@
             "name": "Pato05",
             "email": "pato05mc@gmail.com"
         }
-    ]
+    ],
+    "require-dev": {
+        "amphp/php-cs-fixer-config": "dev-master"
+    }
 }

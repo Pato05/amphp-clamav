@@ -3,9 +3,9 @@
 namespace Amp\ClamAV;
 
 use Amp\ByteStream\InputStream;
-use Amp\Socket\Socket;
-use Amp\Promise;
 use Amp\Deferred;
+use Amp\Promise;
+use Amp\Socket\Socket;
 
 use function Amp\call;
 
@@ -14,10 +14,20 @@ class Session extends Base
     private Socket $socket;
     private array $deferreds = []; // $i -> \Amp\Deferred
     private int $reqId = 1;
+
     private function __construct()
     {
     }
 
+    /**
+     * Makes a Session instance from a socket (shouldn't be used as part of the public API, use ClamAV::session() instead!).
+     *
+     * @internal
+     *
+     * @param Socket $socket
+     *
+     * @return Promise<Session>
+     */
     public static function fromSocket(Socket $socket): Promise
     {
         return call(function () use ($socket) {
@@ -29,21 +39,37 @@ class Session extends Base
         });
     }
 
+    /** @inheritdoc */
     protected function command(string $command, bool $waitForResponse = true): \Generator
     {
         $this->socket->write('z' . $command . "\x0");
         if ($waitForResponse) {
-            return yield $this->commandResponsePromise();
+            return yield $this->commandResponsePromise($this->reqId++);
         }
     }
 
-    protected function commandResponsePromise(): Promise
+    /**
+     * Gets or creates a command response promise (that will be later resolved by the readLoop).
+     *
+     * @param int $reqId The request's id (an auto-increment integer, which will be used by ClamD to identify this request)
+     *
+     * @return Promise<string>
+     */
+    protected function commandResponsePromise(int $reqId): Promise
     {
+        if (isset($this->deferreds[$reqId])) {
+            return $this->deferreds[$reqId];
+        }
         $deferred = new Deferred;
-        $this->deferreds[$this->reqId++] = $deferred;
+        $this->deferreds[$reqId] = $deferred;
         return $deferred->promise();
     }
 
+    /**
+     * A read loop for the ClamD socket (given that it might send responses unordered).
+     *
+     * @return Promise<never>
+     */
     protected function readLoop()
     {
         return call(function () {
@@ -51,9 +77,9 @@ class Session extends Base
             // read from the socket
             while (null !== $chunk = yield $this->socket->read()) {
                 // split the message (ex: "1: PONG")
-                $parts = explode(' ', $chunk, 2);
-                $message = trim($parts[1]);
-                $id = (int)substr($parts[0], 0, strpos($parts[0], ':'));
+                $parts = \explode(' ', $chunk, 2);
+                $message = \trim($parts[1]);
+                $id = (int) \substr($parts[0], 0, \strpos($parts[0], ':'));
                 if (isset($this->deferreds[$id])) {
                     /** @var Deferred */
                     $deferred = $this->deferreds[$id];
@@ -65,6 +91,11 @@ class Session extends Base
         });
     }
 
+    /**
+     * Ends this session.
+     *
+     * @return Promise<void>
+     */
     public function end(): Promise
     {
         return call(function () {
@@ -77,14 +108,9 @@ class Session extends Base
     public function scanFromStream(InputStream $stream): Promise
     {
         return call(function () use ($stream) {
-            $promise = $this->commandResponsePromise();
+            $promise = $this->commandResponsePromise($this->reqId++);
             yield from $this->pipeStreamScan($stream, $this->socket);
             return $this->parseScanOutput(yield $promise);
         });
-    }
-
-    protected function getSocket()
-    {
-        return $this->socket;
     }
 }

@@ -6,18 +6,18 @@ An asynchronous ClamAV wrapper written with amphp/socket
 
 Ping and scan of a file/directory
 
-`examples/scan.php`:
+[`examples/scan.php`](https://github.com/Pato05/amphp-clamav/blob/main/examples/scan.php):
 
 ```php
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Monolog\Logger;
+use Amp\ByteStream\ResourceOutputStream;
+use Amp\ClamAV;
 use Amp\Log\ConsoleFormatter;
 use Amp\Log\StreamHandler;
-use Amp\ByteStream\ResourceOutputStream;
 use Amp\Loop;
-use Amp\ClamAV;
+use Monolog\Logger;
 
 Loop::run(function () {
     $logHandler = new StreamHandler(new ResourceOutputStream(\STDOUT));
@@ -27,24 +27,22 @@ Loop::run(function () {
 
     $logger->info('connecting...');
 
-    /** @var ClamAV\Session */
-    $clamav = yield (new ClamAV())->session();
+    $clamav = new ClamAV;
     if (yield $clamav->ping()) {
         $logger->info('connected successfully!');
     } else {
         $logger->critical('connection failed!');
-        $clamav->end();
         return;
     }
-    $logger->info('running test scan on /tmp/testscan...');
-    yield $clamav->scan('/tmp/testscan');
-    $clamav->end();
+    $logger->info('running test scan...');
+    $result = yield $clamav->scan('/tmp/eicar.com');
+    echo $result . PHP_EOL;
 });
 ```
 
 Scanning from a `ResourceInputStream`
 
-`examples/scan_stream.php`:
+[`examples/scan_stream.php`](https://github.com/Pato05/amphp-clamav/blob/main/examples/scan_stream.php):
 
 ```php
 <?php
@@ -66,19 +64,31 @@ Loop::run(function () {
     $logger->pushHandler($logHandler);
 
     $logger->info('connecting...');
-    $clamav = yield (new ClamAV)->session();
+
+    $clamav = new ClamAV;
     if (yield $clamav->ping()) {
         $logger->info('connected!');
     } else {
         $logger->critical('connection failed.');
         return;
     }
+    /*
+        This is absolutely NOT RECOMMENDED to do and this is given only as an example of usage of the scanFromStream method.
+        It is recommended to use amphp/file instead, as it is written just below.
+        DON'T USE THIS SNIPPET APART FROM TESTING REASONS.
 
-    $file = fopen('/tmp/eicar.com', 'r');
-    echo (yield $clamav->scanFromStream(new ResourceInputStream($file))) . PHP_EOL;
-    echo 'done' . PHP_EOL;
-    fclose($file);
-    yield $clamav->end();
+        $file = yield \Amp\File\open('/tmp/eicar.com', 'r');
+        $res = yield $clamav->scanFromStream($file);
+
+        fopen is blocking and SHOULD NOT be used within asynchronous applications.
+    */
+    $file = \fopen('/tmp/eicar.com', 'r');
+    $stream = new ResourceInputStream($file);
+
+    /** @var \Amp\ClamAV\ScanResult */
+    $res = yield $clamav->scanFromStream($stream);
+    echo (string) $res . PHP_EOL;
+    \fclose($file);
 });
 ```
 
@@ -94,10 +104,26 @@ Be aware that TCP/IP sockets may be slightly slower than UNIX ones.
 
 ## Using MULTISCAN
 
-MULTISCAN is supported but can only be used on non-session instances (due to a clamav limitation).
+MULTISCAN is supported but can only be used on non-session instances (due to a ClamAV limitation).
 
 MULTISCAN allows you to make a multithreaded scan.
+
+```php
+$result = yield $clamav->multiscan('FILEPATH');
+```
 
 ## Differences between running a session and without
 
 Sessions run on the same socket connection, while non-session instances will reconnect to the socket for each command. The library supports both, it's up to you deciding which to use.
+
+Instantiating a session is pretty straight forward, just use the `ClamAV::session()` method like this:
+
+```php
+$clamSession = yield (new ClamAV)->session();
+```
+
+Though you MUST end every session by using the method `Session::end()`:
+
+```php
+yield $clamSession->end();
+```

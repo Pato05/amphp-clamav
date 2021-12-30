@@ -4,21 +4,18 @@ namespace Amp;
 
 use Amp\ByteStream\InputStream;
 use Amp\ClamAV\Base;
-use Amp\Promise;
-use Amp\Socket\Socket;
 use Amp\ClamAV\Session;
-
-use function Amp\call;
+use Amp\Socket\Socket;
 
 class ClamAV extends Base
 {
     const DEFAULT_SOCK_URI = 'unix:///run/clamav/clamd.ctl';
 
     /**
-     * Constructs the class
-     * 
-     * @param string $sockuri The socket uri (unix://PATH or tcp://IP:PORT)
-     * 
+     * Constructs the class.
+     *
+     * @param string $sockuri The socket uri (`unix://PATH` or `tcp://IP:PORT`)
+     *
      * @return Promise<ClamAV>
      */
     public function __construct(private $sockuri = self::DEFAULT_SOCK_URI)
@@ -26,8 +23,9 @@ class ClamAV extends Base
     }
 
     /**
-     * Initiate a new ClamAV session
-     * 
+     * Initiates a new ClamAV session
+     * Note: you MUST call `Session::end()` once you are done.
+     *
      * @return Promise<Session>
      */
     public function session(): Promise
@@ -40,11 +38,21 @@ class ClamAV extends Base
         });
     }
 
-    public function multiscan(string $path)
+    /**
+     * Runs a multithreaded ClamAV scan (using the `MULTISCAN` command).
+     *
+     * @param string $path The file or directory's path
+     *
+     * @return Promise<ScanResult>
+     */
+    public function multiscan(string $path): Promise
     {
-        $message = yield from $this->command('MULTISCAN ' . $path);
+        return call(function () use ($path) {
+            return $this->parseScanOutput(yield from $this->command('MULTISCAN ' . $path));
+        });
     }
 
+    /** @inheritdoc */
     public function scanFromStream(InputStream $stream): Promise
     {
         return call(function () use ($stream) {
@@ -55,15 +63,22 @@ class ClamAV extends Base
         });
     }
 
+    /** @inheritdoc */
     protected function command(string $command, bool $waitForResponse = true): \Generator
     {
         /** @var Socket */
         $socket = yield from $this->getSocket();
         $socket->write('z' . $command . "\x0");
-        if ($waitForResponse)
-            return trim(yield $socket->read());
+        if ($waitForResponse) {
+            return \trim(yield $socket->read());
+        }
     }
 
+    /**
+     * Gets a new socket (to execute a new command).
+     *
+     * @return \Generator<Socket>
+     */
     protected function getSocket(): \Generator
     {
         return yield \Amp\Socket\connect($this->sockuri);

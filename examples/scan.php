@@ -1,12 +1,12 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Monolog\Logger;
+use Amp\ByteStream\ResourceOutputStream;
+use Amp\ClamAV;
 use Amp\Log\ConsoleFormatter;
 use Amp\Log\StreamHandler;
-use Amp\ByteStream\ResourceOutputStream;
 use Amp\Loop;
-use Amp\ClamAV;
+use Monolog\Logger;
 
 Loop::run(function () {
     $logHandler = new StreamHandler(new ResourceOutputStream(\STDOUT));
@@ -16,17 +16,14 @@ Loop::run(function () {
 
     $logger->info('connecting...');
 
-    /** @var ClamAV\Session */
-    $clamav = yield (new ClamAV())->session();
+    $clamav = new ClamAV;
     if (yield $clamav->ping()) {
         $logger->info('connected successfully!');
     } else {
         $logger->critical('connection failed!');
-        $clamav->end();
         return;
     }
     $logger->info('running test scan...');
     $result = yield $clamav->scan('/tmp/eicar.com');
     echo $result . PHP_EOL;
-    $clamav->end();
 });
