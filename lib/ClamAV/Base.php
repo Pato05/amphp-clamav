@@ -34,8 +34,34 @@ abstract class Base
     public function scan(string $path): Promise
     {
         return call(function () use ($path): \Generator {
-            $message = yield from $this->command('SCAN ' . $path);
-            return $this->parseScanOutput($message);
+            return $this->parseScanOutput(yield from $this->command('SCAN ' . $path));
+        });
+    }
+
+    /**
+     * Runs a continue scan that stops after the entire file has been checked
+     * 
+     * @param string $path
+     * 
+     * @return Promise<array<ScanResult>>
+     */
+    public function continueScan(string $path): Promise
+    {
+        return call(function () use ($path) {
+            $output = \trim(yield from $this->command('CONTSCAN ' . $path));
+            return \array_map([$this, 'parseScanOutput'], array_filter(explode("\n", $output), fn ($val) => !empty($val)));
+        });
+    }
+
+    /**
+     * Runs the `VERSION` command
+     * 
+     * @return Promise<string>
+     */
+    public function version()
+    {
+        return call(function () {
+            return \trim(yield from $this->command('VERSION'));
         });
     }
 
@@ -92,9 +118,10 @@ abstract class Base
     protected function parseScanOutput(string $output): ScanResult
     {
         $output = \trim($output);
-        $parts = \explode(': ', $output, 2);
-        $filename = $parts[0];
-        $result = $parts[1];
+        $separatorPos = \strrpos($output, ': ');
+        $separatorLength = 2;
+        $filename = \substr($output, 0, $separatorPos);
+        $result = \substr($output, $separatorPos + $separatorLength);
         if (empty($filename) || empty($result)) {
             throw new ParseException('Could not parse string: ' . $output);
         }
@@ -103,12 +130,12 @@ abstract class Base
             return new ScanResult($filename, false, null);
         }
 
-        if (\strpos($result, ' FOUND') !== false) {
-            return new ScanResult($filename, true, \substr($result, 0, \strpos($result, ' FOUND')));
+        if (\str_ends_with($output, ' FOUND')) {
+            return new ScanResult($filename, true, \substr($result, 0, \strrpos($result, ' FOUND')));
         }
 
-        if (\strpos($result, ' ERROR') !== false) {
-            throw new ClamException(\substr($result, 0, \strpos($result, ' ERROR')));
+        if (\str_ends_with($output, ' ERROR')) {
+            throw new ClamException(\substr($result, 0, \strrpos($result, ' ERROR')));
         }
 
         if ($result === 'COMMAND READ TIMED OUT') {
