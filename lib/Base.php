@@ -43,7 +43,7 @@ abstract class Base
      * 
      * @param string $path
      * 
-     * @return Promise<array<ScanResult>>
+     * @return Promise<ScanResult[]>
      */
     public function continueScan(string $path): Promise
     {
@@ -70,8 +70,8 @@ abstract class Base
      *
      * @param $stream
      *
-     * @return Promise<ScanResult>
-     * @throws ClamException If an exception happens with writing to the stream (if the INSTREAM limit has been reached, the errorCode will be `ClamException::INSTREAM_WRITE_EXCEEDED`)
+     * @return \Amp\Promise<\Amp\ClamAV\ScanResult>
+     * @throws \Amp\ClamAV\ClamException If an exception happens with writing to the stream (if the INSTREAM limit has been reached, the errorCode will be `ClamException::INSTREAM_WRITE_EXCEEDED`)
      * @throws \Amp\ByteStream\ClosedException If the socket has been closed
      */
     abstract public function scanFromStream(InputStream $stream): Promise;
@@ -79,8 +79,8 @@ abstract class Base
     /**
      * Pipes an InputStream to a ClamD socket by using the `INSTREAM` command.
      *
-     * @param InputStream $stream The stream to pipe
-     * @param Socket $socket The destination socket
+     * @param \Amp\ByteStream\InputStream $stream The stream to pipe
+     * @param \Amp\Socket\Socket $socket The destination socket
      *
      * @return \Generator<void>
      * @throws \Amp\ByteStream\ClosedException If the socket has been closed
@@ -112,8 +112,9 @@ abstract class Base
      *
      * @param string $output The unparsed output
      *
-     * @return ScanResult
-     * @throws ClamException|ParseException
+     * @return \Amp\ClamAV\ScanResult
+     * @throws \Amp\ClamAV\ClamException
+     * @throws \Amp\ClamAV\ParseException
      */
     protected function parseScanOutput(string $output): ScanResult
     {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "52382d2bb729483f791561c7fcfb7e6d",
+    "content-hash": "665e46a4bc718473c8a6668800c2e003",
     "packages": [
         {
             "name": "amphp/amp",
@@ -1563,6 +1563,158 @@
                 }
             ],
             "time": "2021-11-15T17:17:55+00:00"
+        },
+        {
+            "name": "phabel/phabel",
+            "version": "1.0.49.80",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phabelio/phabel.git",
+                "reference": "304d17d26a42d0922e6c2dd2576aaf2944e1c2d1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phabelio/phabel/zipball/304d17d26a42d0922e6c2dd2576aaf2944e1c2d1",
+                "reference": "304d17d26a42d0922e6c2dd2576aaf2944e1c2d1",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0",
+                "ext-json": "*",
+                "ext-tokenizer": "*",
+                "php": ">=8.0"
+            },
+            "provide": {
+                "phabelio/phabel": "self.version"
+            },
+            "require-dev": {
+                "amphp/file": "^2.0",
+                "bamarni/composer-bin-plugin": "^1.4"
+            },
+            "bin": [
+                "bin/phabel"
+            ],
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Phabel\\Composer\\Plugin",
+                "plugin-modifies-downloads": true
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phabel\\": "src",
+                    "PhabelVendor\\Amp\\": [
+                        "vendor-bundle/amphp/amp/lib"
+                    ],
+                    "PhabelVendor\\Amp\\ByteStream\\": [
+                        "vendor-bundle/amphp/byte-stream/lib"
+                    ],
+                    "PhabelVendor\\Amp\\Parallel\\": [
+                        "vendor-bundle/amphp/parallel/lib"
+                    ],
+                    "PhabelVendor\\Amp\\Parser\\": [
+                        "vendor-bundle/amphp/parser/lib"
+                    ],
+                    "PhabelVendor\\Amp\\Process\\": [
+                        "vendor-bundle/amphp/process/lib"
+                    ],
+                    "PhabelVendor\\Amp\\Serialization\\": [
+                        "vendor-bundle/amphp/serialization/src"
+                    ],
+                    "PhabelVendor\\Amp\\Sync\\": [
+                        "vendor-bundle/amphp/sync/src"
+                    ],
+                    "PhabelVendor\\PhpParser\\": [
+                        "vendor-bundle/phabel/php-parser/lib/PhpParser"
+                    ],
+                    "PhabelVendor\\PHPStan\\PhpDocParser\\": [
+                        "vendor-bundle/phpstan/phpdoc-parser/src/"
+                    ],
+                    "PhabelVendor\\Psr\\Container\\": [
+                        "vendor-bundle/psr/container/src/"
+                    ],
+                    "PhabelVendor\\Psr\\Log\\": [
+                        "vendor-bundle/psr/log/Psr/Log/"
+                    ],
+                    "PhabelVendor\\Symfony\\Component\\Console\\": [
+                        "vendor-bundle/symfony/console/"
+                    ],
+                    "Symfony\\Polyfill\\Ctype\\": [
+                        "vendor-bundle/symfony/polyfill-ctype/"
+                    ],
+                    "Symfony\\Polyfill\\Intl\\Grapheme\\": [
+                        "vendor-bundle/symfony/polyfill-intl-grapheme/"
+                    ],
+                    "Symfony\\Polyfill\\Intl\\Normalizer\\": [
+                        "vendor-bundle/symfony/polyfill-intl-normalizer/"
+                    ],
+                    "Symfony\\Polyfill\\Mbstring\\": [
+                        "vendor-bundle/symfony/polyfill-mbstring/"
+                    ],
+                    "Symfony\\Polyfill\\Php73\\": [
+                        "vendor-bundle/symfony/polyfill-php73/"
+                    ],
+                    "Symfony\\Polyfill\\Php80\\": [
+                        "vendor-bundle/symfony/polyfill-php80/"
+                    ],
+                    "PhabelVendor\\Symfony\\Component\\Process\\": [
+                        "vendor-bundle/symfony/process/"
+                    ],
+                    "PhabelVendor\\Symfony\\Contracts\\Service\\": [
+                        "vendor-bundle/symfony/service-contracts/"
+                    ],
+                    "PhabelVendor\\Symfony\\Component\\String\\": [
+                        "vendor-bundle/symfony/string/"
+                    ]
+                },
+                "files": [
+                    "src/guard.php",
+                    "vendor-bundle/amphp/amp/lib/functions.php",
+                    "vendor-bundle/amphp/amp/lib/Internal/functions.php",
+                    "vendor-bundle/amphp/byte-stream/lib/functions.php",
+                    "vendor-bundle/amphp/parallel/lib/Context/functions.php",
+                    "vendor-bundle/amphp/parallel/lib/Sync/functions.php",
+                    "vendor-bundle/amphp/parallel/lib/Worker/functions.php",
+                    "vendor-bundle/amphp/process/lib/functions.php",
+                    "vendor-bundle/amphp/serialization/src/functions.php",
+                    "vendor-bundle/amphp/sync/src/functions.php",
+                    "vendor-bundle/amphp/sync/src/ConcurrentIterator/functions.php",
+                    "vendor-bundle/symfony/deprecation-contracts/function.php",
+                    "vendor-bundle/symfony/polyfill-ctype/bootstrap.php",
+                    "vendor-bundle/symfony/polyfill-intl-grapheme/bootstrap.php",
+                    "vendor-bundle/symfony/polyfill-intl-normalizer/bootstrap.php",
+                    "vendor-bundle/symfony/polyfill-mbstring/bootstrap.php",
+                    "vendor-bundle/symfony/polyfill-php73/bootstrap.php",
+                    "vendor-bundle/symfony/polyfill-php80/bootstrap.php",
+                    "vendor-bundle/symfony/string/Resources/functions.php"
+                ],
+                "classmap": [
+                    "vendor-bundle/symfony/polyfill-intl-normalizer/Resources/stubs",
+                    "vendor-bundle/symfony/polyfill-php73/Resources/stubs",
+                    "vendor-bundle/symfony/polyfill-php80/Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniil Gentili",
+                    "email": "daniil@daniil.it"
+                }
+            ],
+            "description": "Write and deploy modern PHP 8 code, today.",
+            "support": {
+                "issues": "https://github.com/phabelio/phabel/issues",
+                "source": "https://github.com/phabelio/phabel/tree/1.0.49.80"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/danog",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-12-22T13:38:59+00:00"
         },
         {
             "name": "php-cs-fixer/diff",
@@ -3277,7 +3429,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0",
+        "php": "^8.0",
         "ext-sockets": "*"
     },
     "platform-dev": [],

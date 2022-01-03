@@ -25,7 +25,7 @@ class Session extends Base
      *
      * @internal
      *
-     * @param Socket $socket
+     * @param \Amp\Socket\Socket $socket
      *
      * @return Promise<self>
      */
@@ -54,7 +54,7 @@ class Session extends Base
      *
      * @param int $reqId The request's id (an auto-increment integer, which will be used by ClamD to identify this request)
      *
-     * @return Promise<string>
+     * @return \Amp\Promise<string>
      */
     protected function commandResponsePromise(int $reqId): Promise
     {
@@ -69,7 +69,7 @@ class Session extends Base
     /**
      * A read loop for the ClamD socket (given that it might send responses unordered).
      *
-     * @return Promise<never>
+     * @return \Amp\Promise<never>
      */
     protected function readLoop()
     {
@@ -95,7 +95,7 @@ class Session extends Base
     /**
      * Ends this session.
      *
-     * @return Promise<void>
+     * @return \Amp\Promise<void>
      */
     public function end(): Promise
     {

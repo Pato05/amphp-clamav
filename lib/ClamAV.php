@@ -1,13 +1,13 @@
 <?php
 
-namespace Amp;
+namespace Amp\ClamAV;
 
 use Amp\ByteStream\InputStream;
 use Amp\ByteStream\StreamException;
-use Amp\ClamAV\Base;
-use Amp\ClamAV\ClamException;
-use Amp\ClamAV\Session;
 use Amp\Socket\Socket;
+use Amp\Promise;
+
+use function Amp\call;
 
 class ClamAV extends Base
 {
@@ -26,7 +26,7 @@ class ClamAV extends Base
      * Initiates a new ClamAV session
      * Note: you MUST call `Session::end()` once you are done.
      *
-     * @return Promise<Session>
+     * @return \Amp\Promise<\Amp\ClamAV\Session>
      */
     public function session(): Promise
     {
@@ -43,9 +43,9 @@ class ClamAV extends Base
      *
      * @param string $path The file or directory's path
      *
-     * @return Promise<ScanResult>
+     * @return \Amp\Promise<\Amp\ClamAV\ScanResult>
      */
-    public function multiscan(string $path): Promise
+    public function multiScan(string $path): Promise
     {
         return call(function () use ($path) {
             return $this->parseScanOutput(yield from $this->command('MULTISCAN ' . $path));
@@ -87,7 +87,7 @@ class ClamAV extends Base
     /**
      * Gets a new socket (to execute a new command).
      *
-     * @return \Generator<Socket>
+     * @return \Generator<\Amp\Socket>
      */
     protected function getSocket(): \Generator
     {
