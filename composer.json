@@ -3,16 +3,18 @@
     "description": "An asynchronous clamd wrapper written with amphp/socket",
     "type": "library",
     "require": {
-        "php": "^8.0",
-        "amphp/amp": "^2.6",
-        "amphp/socket": "^1.2",
+        "phabel/phabel": "^1.0",
+        "php": "*",
         "ext-sockets": "*"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Amp\\ClamAV\\": "lib/"
-        }
+        },
+        "files": [
+            "___transpiledWithPhabel.php"
+        ]
     },
     "authors": [
         {
@@ -32,7 +34,11 @@
     },
     "extra": {
         "phabel": {
-            "revision": 0
+            "revision": 0,
+            "require": {
+                "amphp/amp": "^2.6",
+                "amphp/socket": "^1.2"
+            }
         }
     }
 }
