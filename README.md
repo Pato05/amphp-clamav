@@ -22,19 +22,18 @@ use Amp\ClamAV;
 use Amp\Loop;
 
 Loop::run(function () {
-
     echo 'connecting...' . PHP_EOL;
 
-    $clamav = new ClamAV;
-    if (yield $clamav->ping()) {
+    if (yield ClamAV\ping()) {
         echo 'connected successfully!' . PHP_EOL;
     } else {
         echo 'connection failed!' . PHP_EOL;
         return;
     }
     echo 'running test scan...' . PHP_EOL;
-    /** @var \Amp\ClamAV\ScanResult */
-    $result = yield $clamav->scan('/tmp/eicar.com');
+
+    /** @var ClamAV\ScanResult */
+    $result = yield ClamAV\scan('/tmp/eicar.com');
     echo (string) $result . PHP_EOL;
 });
 ```
@@ -54,8 +53,7 @@ use Amp\Loop;
 Loop::run(function () {
     echo 'connecting...' . PHP_EOL;
 
-    $clamav = new ClamAV;
-    if (yield $clamav->ping()) {
+    if (yield ClamAV\ping()) {
         echo 'connected!' . PHP_EOL;
     } else {
         echo 'connection failed.' . PHP_EOL;
@@ -67,7 +65,7 @@ Loop::run(function () {
     $file = yield \Amp\File\openFile('/tmp/eicar.com', 'r');
 
     /** @var \Amp\ClamAV\ScanResult */
-    $res = yield $clamav->scanFromStream($file);
+    $res = yield ClamAV\scanFromStream($file);
     yield $file->close(); // always close files to avoid memory leaks
     echo (string) $res . PHP_EOL;
 });
@@ -75,10 +73,12 @@ Loop::run(function () {
 
 ## Using a TCP/IP socket instead
 
-When instantiating the `ClamAV` class, you can also define your socket URI, therefore if you want to use a TCP/IP socket instead of a UNIX one, do:
+If you want to use a TCP/IP socket instead of a UNIX one, you should use the `ClamAV\clamav()` function prior to any other call, or just use a custom `ClamAV` instance:
 
 ```php
-$clamav = new ClamAV('tcp://IP:PORT');
+\Amp\ClamAV\clamav('tcp://IP:PORT'); // to access it statically
+// or
+$clamav = new \Amp\ClamAV\ClamAV('tcp://IP:PORT');
 ```
 
 Be aware that TCP/IP sockets may be slightly slower than UNIX ones.
@@ -90,7 +90,7 @@ MULTISCAN is supported but can only be used on non-session instances (due to a C
 MULTISCAN allows you to make a multithreaded scan.
 
 ```php
-$result = yield $clamav->multiscan('FILEPATH');
+$result = yield \Amp\ClamAV\multiScan('FILEPATH');
 ```
 
 ## Differences between running a session and without
@@ -100,7 +100,7 @@ Sessions run on the same socket connection, while non-session instances will rec
 Instantiating a session is pretty straight forward, just use the `ClamAV::session()` method like this:
 
 ```php
-$clamSession = yield (new ClamAV)->session();
+$clamSession = yield \Amp\ClamAV\session();
 ```
 
 Though you MUST end every session by using the method `Session::end()`:
