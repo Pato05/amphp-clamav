@@ -12,7 +12,10 @@
     "autoload": {
         "psr-4": {
             "Amp\\ClamAV\\": "lib/"
-        }
+        },
+        "files": [
+            "lib/functions.php"
+        ]
     },
     "authors": [
         {
